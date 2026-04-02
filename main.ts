@@ -195,75 +195,6 @@ function bot_Servo_Motors_Basic_Fn (network_ReceivedString_FromControllerJoystic
         )
     }
 }
-function bot_Servo_Arms_Fn (network_ReceivedString_FromControllerJoystick_Str_ParamIn: string) {
-    if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "arm_up") {
-        images.createImage(`
-            # . . . .
-            . # . . .
-            . . # . .
-            . . . . .
-            . . . . .
-            `).showImage(0, 0)
-        quest_Note_1.quest_Show_String_For_Note_Small_Func(
-        "If [0|360] is jittery, insure battery at 75% power min."
-        )
-        quest_Note_1.quest_Show_String_For_Note_Small_Func(
-        "GeekServo-360-Degrees-2kg:360-degrees(not 180-degrees)"
-        )
-        quest_Motors.quest_Set_AutoDegrees_ForServoArm_Func(
-        quest_PortSingle_ServoArm_PortId_Enum.S7_ServoArm_Left,
-        quest_ServoArm_DegreesInDirection_Enum.Up,
-        quest_Debug_Show_Enum.Dashboard_OLED
-        )
-        quest_Motors.quest_Set_AutoDegrees_ForServoArm_Func(
-        quest_PortSingle_ServoArm_PortId_Enum.S6_ServoArm_Right,
-        quest_ServoArm_DegreesInDirection_Enum.Up,
-        quest_Debug_Show_Enum.Dashboard_OLED
-        )
-    } else if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "arm_down") {
-        images.createImage(`
-            . . . . .
-            . . . . .
-            . . # . .
-            . # . . .
-            # . . . .
-            `).showImage(0, 0)
-        quest_Note_1.quest_Show_String_For_Note_Small_Func(
-        "If [0|360] is jittery, insure battery at 75% power min."
-        )
-        quest_Note_1.quest_Show_String_For_Note_Small_Func(
-        "GeekServo-360-Degrees-2kg:360-degrees(not 180-degrees)"
-        )
-        quest_Motors.quest_Set_AutoDegrees_ForServoArm_Func(
-        quest_PortSingle_ServoArm_PortId_Enum.S7_ServoArm_Left,
-        quest_ServoArm_DegreesInDirection_Enum.Down,
-        quest_Debug_Show_Enum.Dashboard_OLED
-        )
-        quest_Motors.quest_Set_AutoDegrees_ForServoArm_Func(
-        quest_PortSingle_ServoArm_PortId_Enum.S6_ServoArm_Right,
-        quest_ServoArm_DegreesInDirection_Enum.Down,
-        quest_Debug_Show_Enum.Dashboard_OLED
-        )
-    } else if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "arm_back") {
-        images.createImage(`
-            . . . . #
-            . . . # .
-            . . # . .
-            . . . . .
-            . . . . .
-            `).showImage(0, 0)
-        quest_Motors.quest_Set_AutoDegrees_ForServoArm_Func(
-        quest_PortSingle_ServoArm_PortId_Enum.S7_ServoArm_Left,
-        quest_ServoArm_DegreesInDirection_Enum.Back,
-        quest_Debug_Show_Enum.Dashboard_OLED
-        )
-        quest_Motors.quest_Set_AutoDegrees_ForServoArm_Func(
-        quest_PortSingle_ServoArm_PortId_Enum.S6_ServoArm_Right,
-        quest_ServoArm_DegreesInDirection_Enum.Back,
-        quest_Debug_Show_Enum.Dashboard_OLED
-        )
-    }
-}
 function bot_Servo_Motors_Turbo_Fn (network_ReceivedString_FromControllerJoystick_Str_ParamIn: string) {
     if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "forward_turbo") {
         images.createImage(`
@@ -276,11 +207,11 @@ function bot_Servo_Motors_Turbo_Fn (network_ReceivedString_FromControllerJoystic
         turbo_mode = 1
     } else if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "turbo_off") {
         images.createImage(`
-            # . # # .
-            . # . . #
-            # . # . #
-            # . . # .
-            . # # . #
+            . . . . .
+            . . . . .
+            . . # . .
+            . . . . .
+            . . . . .
             `).showImage(0, 0)
         turbo_mode = 0
     }
@@ -566,7 +497,7 @@ radio.onReceivedString(function (receivedString) {
         if (_system_Hw_DeviceType__Now__Id_Int == _system_Hw_DeviceType__Bot__ID_INT && (_system_Sw_ModeState__Now__Id_Int == _system_Sw_ModeState__Run__AndShow_01_DeviceType__ID_INT || _system_Sw_ModeState__Now__Id_Int == _system_Sw_ModeState__Run__AndShow_02_GroupChannelNum__ID_INT)) {
             bot_Servo_Motors_Basic_Fn(receivedString)
             bot_Servo_Motors_Turbo_Fn(receivedString)
-            bot_Servo_Arms_Fn(receivedString)
+            bot_Tap_Turn_Fn(receivedString)
             network__CpuCycle_Post__Management_Func()
         } else if (_system_Hw_DeviceType__Now__Id_Int == _system_Hw_DeviceType__Null__ID_INT) {
             quest_Note_3.quest_Show_String_For_Note_Big_Func(
@@ -630,6 +561,40 @@ input.onButtonPressed(Button.B, function () {
         )
     }
 })
+function bot_Tap_Turn_Fn (network_ReceivedString_FromControllerJoystick_Str_ParamIn: string) {
+    if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "tap_left") {
+        // Button "D" press handler.
+        images.createImage(`
+            # # # . .
+            # # . . .
+            # . # . .
+            . . . # .
+            . . . . #
+            `).showImage(0, 0)
+        tap_left_turn_bias = 0.7
+        tap_right_turn_bias = 1
+    } else if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "tap_right") {
+        images.createImage(`
+            . . # # #
+            . . . # #
+            . . # . #
+            . # . . .
+            # . . . .
+            `).showImage(0, 0)
+        tap_left_turn_bias = 1
+        tap_right_turn_bias = 0.7
+    } else {
+        images.createImage(`
+            . . . . .
+            . . . . .
+            . . # . .
+            . . . . .
+            . . . . .
+            `).showImage(0, 0)
+        tap_left_turn_bias = 1
+        tap_right_turn_bias = 1
+    }
+}
 function setup_Code_For_System_Func () {
     if (true) {
         setup_VariablesAndConstants_UserCustomizableNot_Func()
@@ -815,7 +780,7 @@ turbo_mode = 0
 normal_start_speed = 20
 // This variable controls the rate of the acceleration ramp-- how long the bot takes to get from zero to max. In initial testing 1 worked well, 2 produced tire slippage.
 accel_rate = 1
-max_normal_speed = 60
+max_normal_speed = 99
 // This value will determine the maximum speed to which the bot will accelerate before topping out. Valid range is 0 to 100.
 max_turbo_speed = 99
 quest_Note_4.quest_Show_String_For_Note_Small_Func(
@@ -1258,28 +1223,30 @@ basic.forever(function () {
         "Network Message Max_Character_Length: 19"
         )
         if (_system_Hw_DeviceType__Now__Id_Int == _system_Hw_DeviceType__Controller_Joystick__ID_INT && (_system_Sw_ModeState__Now__Id_Int == _system_Sw_ModeState__Run__AndShow_01_DeviceType__ID_INT || _system_Sw_ModeState__Now__Id_Int == _system_Sw_ModeState__Run__AndShow_02_GroupChannelNum__ID_INT)) {
-            if (joystickbit.getButton(joystickbit.JoystickBitPin.P13)) {
+            if (joystickbit.getButton(joystickbit.JoystickBitPin.P12)) {
+                // Button "D" press handler.
                 images.createImage(`
-                    # . . . .
-                    . # . . .
-                    . . # . .
-                    . . . . .
-                    . . . . .
+                    # # # . .
+                    # # . . .
+                    # . # . .
+                    . . . # .
+                    . . . . #
                     `).showImage(0, 0)
-                radio.sendString("arm_up")
+                radio.sendString("tap_left")
                 quest_Note_1.quest_Show_String_For_Note_Small_Func(
                 "Following 0-Reset to Allow Idle/Stop Afterwards"
                 )
                 controller__Polar_OriginAtCenter__MagnitudePixel__PreviousCycles_IdleCount__Int = 0
-            } else if (joystickbit.getButton(joystickbit.JoystickBitPin.P12)) {
+            } else if (joystickbit.getButton(joystickbit.JoystickBitPin.P13)) {
+                // Button "C" press handler.
                 images.createImage(`
-                    . . . . .
-                    . . . . .
-                    . . # . .
+                    . . # # #
+                    . . . # #
+                    . . # . #
                     . # . . .
                     # . . . .
                     `).showImage(0, 0)
-                radio.sendString("arm_down")
+                radio.sendString("tap_right")
                 quest_Note_1.quest_Show_String_For_Note_Small_Func(
                 "Following 0-Reset to Allow Idle/Stop Afterwards"
                 )
