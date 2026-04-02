@@ -779,7 +779,7 @@ turbo_mode = 0
 // The accel ramp doesn't have to start at 0. Initial testing showed that while setting any value from 0 to 100 is possible, starting speeds of over 20 caused tire slippage.  This condition can vary by terrain type.
 normal_start_speed = 20
 // This variable controls the rate of the acceleration ramp-- how long the bot takes to get from zero to max. In initial testing 1 worked well, 2 produced tire slippage.
-accel_rate = 1
+accel_rate = 5
 max_normal_speed = 99
 // This value will determine the maximum speed to which the bot will accelerate before topping out. Valid range is 0 to 100.
 max_turbo_speed = 99
