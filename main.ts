@@ -6,6 +6,20 @@ function screen_PlotNewDot_ClearOldDot_WithHeartbeat_Func (screen_x_new_num: num
     screen_XY_Brightness_Old_Num = led.pointBrightness(screen_x_new_num, screen_y_new_num)
     led.plotBrightness(screen_x_new_num, screen_y_new_num, screenBrightness_Heartbeat_Count_Int)
 }
+function bot_U_Turn (network_ReceivedString_FromControllerJoystick_Str_ParamIn: string) {
+    if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "u_turn") {
+        u_turn_in_progress = 1
+        images.createImage(`
+            . # # # #
+            . # . . #
+            . # . . #
+            # # # . .
+            . # . . .
+            `).showImage(0, 0)
+    } else {
+        u_turn_in_progress = 0
+    }
+}
 function screen_Clear_Func () {
     for (let index_X = 0; index_X <= 4; index_X++) {
         for (let index_Y = 0; index_Y <= 4; index_Y++) {
@@ -89,15 +103,35 @@ function bot_Servo_Motors_Basic_Fn (network_ReceivedString_FromControllerJoystic
                 }
             }
         }
-        quest_Note_1.quest_Show_String_For_Note_Small_Func(
-        "Motors reversed on Swim Bot"
-        )
-        // //jwc o roboQuest.powerMotorsViaBlueRedBlackPins(PortGroup_BlueRedBlack__PortIds__Enum.S1_MotorLeft__S0_MotorRight, motor_Power_ZERO_INT, motor_Power_ZERO_INT)
-        quest_Motors.quest_Set_PowerMotorsViaBlueRedBlackPins_Func(
-        quest_PortGroup_BlueRedBlack_PortIds_Enum.S1_MotorLeft__S0_MotorRight,
-        normal_accel_speed * tap_right_turn_bias,
-        normal_accel_speed * tap_left_turn_bias
-        )
+        if (u_turn_in_progress == 1) {
+            quest_Note_1.quest_Show_String_For_Note_Small_Func(
+            "Driver commanded end-of-lane U-turn"
+            )
+            quest_Note_1.quest_Show_String_For_Note_Small_Func(
+            "Command U turn motor speeds"
+            )
+            // //jwc o roboQuest.powerMotorsViaBlueRedBlackPins(PortGroup_BlueRedBlack__PortIds__Enum.S1_MotorLeft__S0_MotorRight, motor_Power_ZERO_INT, motor_Power_ZERO_INT)
+            quest_Motors.quest_Set_PowerMotorsViaBlueRedBlackPins_Func(
+            quest_PortGroup_BlueRedBlack_PortIds_Enum.S1_MotorLeft__S0_MotorRight,
+            99,
+            18
+            )
+            quest_Note_1.quest_Show_String_For_Note_Small_Func(
+            "After U-turn must restart accel curve from start"
+            )
+            // If the start speed is too high, the tires break static friction and one or both of them spin, which can make for squirrely behavior at start. In initial testing a starting speed of 20 and then gradual ramp up to 3,4,5... max produced a smooth acceleration that takes a little less than a second.
+            normal_accel_speed = normal_start_speed
+        } else {
+            quest_Note_1.quest_Show_String_For_Note_Small_Func(
+            "Command adjusted forward speeds"
+            )
+            // //jwc o roboQuest.powerMotorsViaBlueRedBlackPins(PortGroup_BlueRedBlack__PortIds__Enum.S1_MotorLeft__S0_MotorRight, motor_Power_ZERO_INT, motor_Power_ZERO_INT)
+            quest_Motors.quest_Set_PowerMotorsViaBlueRedBlackPins_Func(
+            quest_PortGroup_BlueRedBlack_PortIds_Enum.S1_MotorLeft__S0_MotorRight,
+            normal_accel_speed * tap_right_turn_bias,
+            normal_accel_speed * tap_left_turn_bias
+            )
+        }
     } else if (network_ReceivedString_FromControllerJoystick_Str_ParamIn == "backward") {
         images.createImage(`
             . . . . .
@@ -498,6 +532,7 @@ radio.onReceivedString(function (receivedString) {
             bot_Servo_Motors_Basic_Fn(receivedString)
             bot_Servo_Motors_Turbo_Fn(receivedString)
             bot_Tap_Turn_Fn(receivedString)
+            bot_U_Turn(receivedString)
             network__CpuCycle_Post__Management_Func()
         } else if (_system_Hw_DeviceType__Now__Id_Int == _system_Hw_DeviceType__Null__ID_INT) {
             quest_Note_3.quest_Show_String_For_Note_Big_Func(
@@ -749,6 +784,7 @@ let screenBrightness_Heartbeat_Count_Int = 0
 let screen_XY_Brightness_Old_Num = 0
 let screen_Y_Old_Num = 0
 let screen_X_Old_Num = 0
+let u_turn_in_progress = 0
 let tap_right_turn_bias = 0
 let tap_left_turn_bias = 0
 let max_turbo_speed = 0
@@ -770,7 +806,7 @@ quest_Note_2.quest_Show_String_For_Note_Big_Func(
 quest_Note_2.quest_Show_String_For_Note_Small_Func(
 "... Range [21-255], Default = 1"
 )
-network_GroupChannel_MyBotAndController_Base0_Int = 13
+network_GroupChannel_MyBotAndController_Base0_Int = 74
 setup_Code_For_System_Func()
 quest_Note_1.quest_Show_String_For_Note_Big_Func(
 "Below, Setup Code for Teacher:"
@@ -781,13 +817,20 @@ normal_start_speed = 20
 // This variable controls the rate of the acceleration ramp-- how long the bot takes to get from zero to max. In initial testing 1 worked well, 2 produced tire slippage.
 accel_rate = 5
 max_normal_speed = 99
+quest_Note_1.quest_Show_String_For_Note_Small_Func(
+"For Swim Bot, \"Turbo\" drops speed for slower maneuvers"
+)
 // This value will determine the maximum speed to which the bot will accelerate before topping out. Valid range is 0 to 100.
-max_turbo_speed = 99
+max_turbo_speed = 60
 quest_Note_4.quest_Show_String_For_Note_Small_Func(
 "Tap-to-turn variables"
 )
 tap_left_turn_bias = 1
 tap_right_turn_bias = 1
+quest_Note_4.quest_Show_String_For_Note_Small_Func(
+"auto U-turn variables"
+)
+u_turn_in_progress = 0
 quest_Note_1.quest_Show_String_For_Note_Big_Func(
 "Below, Setup Code for Student:"
 )
@@ -1251,6 +1294,20 @@ basic.forever(function () {
                 "Following 0-Reset to Allow Idle/Stop Afterwards"
                 )
                 controller__Polar_OriginAtCenter__MagnitudePixel__PreviousCycles_IdleCount__Int = 0
+            } else if (joystickbit.getButton(joystickbit.JoystickBitPin.P14)) {
+                // Button "C" press handler.
+                images.createImage(`
+                    . # # # #
+                    . # . . #
+                    . # . . #
+                    # # # . .
+                    . # . . .
+                    `).showImage(0, 0)
+                radio.sendString("u_turn")
+                quest_Note_1.quest_Show_String_For_Note_Small_Func(
+                "Following 0-Reset to Allow Idle/Stop Afterwards"
+                )
+                controller__Polar_OriginAtCenter__MagnitudePixel__PreviousCycles_IdleCount__Int = 0
             }
             network__CpuCycle_Post__Management_Func()
         }
@@ -1258,6 +1315,9 @@ basic.forever(function () {
         "Level 2.1: Variables_n_Constants_Yes"
         )
     }
+})
+basic.forever(function () {
+	
 })
 basic.forever(function () {
     quest_Note_6.quest_Show_String_For_Note_Big_Func(
